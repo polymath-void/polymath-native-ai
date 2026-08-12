@@ -99,8 +99,9 @@ class AgentTUI:
                 context_str += f"<|assistant|>\n{msg['content']}<|end|>\n"
                 
         try:
+            gatekeeper_path = "/data/data/com.termux/files/home/Projects/polymath-native-ai/python_agent/llama_gatekeeper.py"
             result = subprocess.run(
-                ["llama_gatekeeper", prompt, context_str],
+                ["python3", gatekeeper_path, prompt, context_str],
                 capture_output=True, text=True
             )
             if result.returncode != 0:
