@@ -3,6 +3,7 @@ import os
 import json
 import sqlite3
 import time
+import getpass
 from typing import List, Dict
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -112,7 +113,7 @@ class AgentTUI:
         # Auth check
         auth_token = self.config.get("AUTH_TOKEN")
         if auth_token:
-            password = self.session.prompt("Enter Auth Token: ", is_password=True)
+            password = getpass.getpass("Enter Auth Token: ")
             if password != auth_token:
                 self.console.print("[red]Authentication failed.[/red]")
                 return

@@ -71,7 +71,7 @@ def execute_query(prompt, context=""):
     full_prompt = f"<|system|>\n{system_prompt}<|end|>\n{context}<|user|>\n{prompt}<|end|>\n<|assistant|>\n"
     payload = json.dumps({"prompt": full_prompt, "n_predict": 1024, "temperature": ENGINE_TEMP}).encode('utf-8')
     req = urllib.request.Request(
-        f"{ENGINE_URL}/completion",
+        f"{ENGINE_URL}/v1/completions",
         data=payload,
         headers={'Content-Type': 'application/json'},
         method='POST'
@@ -80,8 +80,8 @@ def execute_query(prompt, context=""):
     try:
         with urllib.request.urlopen(req, timeout=300) as resp:
             data = json.loads(resp.read().decode('utf-8'))
-            if "content" in data:
-                return data["content"].strip()
+            if "choices" in data and len(data["choices"]) > 0:
+                return data["choices"][0]["text"].strip()
             elif "error" in data:
                 return f"[Gatekeeper Backend Error] {data['error']}"
     except urllib.error.URLError as e:
