@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Native binaries
+*.o
+*.so
+*.dylib
+*.dll
+target/
+build/
+dist/
+build_binary.sh
+
+# Magisk and System
+/deploy_scripts/tmp/
+
+# Logs and Data
+*.log
+*.sqlite
+*.db
+memory.db
+active_chats.md
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

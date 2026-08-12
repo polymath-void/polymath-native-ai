@@ -13,48 +13,62 @@ import subprocess
 
 DAEMON_START_CMD = ["su", "-c", "start native_ai_engine"]
 DAEMON_STOP_CMD = ["su", "-c", "stop native_ai_engine"]
-ENGINE_URL = "http://127.0.0.1:57160"
+
+def load_config():
+    config_path = "/data/data/com.termux/files/home/Projects/native-ai/config.env"
+    port = "57160"
+    try:
+        with open(config_path, "r") as f:
+            for line in f:
+                if line.startswith("PORT="):
+                    port = line.strip().split("=")[1]
+    except Exception:
+        pass
+    return f"http://127.0.0.1:{port}"
+
+ENGINE_URL = load_config()
 
 def wake_daemon():
     try:
         # Try native Android init first (works after reboot)
         subprocess.run(DAEMON_START_CMD, check=True, capture_output=True)
-        time.sleep(0.5) 
     except Exception:
         pass
 
-    # Verify if the engine actually started by checking the health endpoint
-    try:
-        req = urllib.request.Request(f"{ENGINE_URL}/health", method='GET')
-        urllib.request.urlopen(req, timeout=1)
-    except Exception:
-        # If it failed (likely because no reboot after Magisk install), run binary directly
-        subprocess.Popen(
-            ["su", "-c", "/data/adb/modules/native_ai_engine/system/bin/native_ai_engine"],
-            stdout=subprocess.DEVNULL, 
-            stderr=subprocess.DEVNULL
-        )
-        time.sleep(1.5) # Give it an extra second to load the model and bind socket
+    # Verify if the engine actually started and wait for model load
+    for _ in range(30):
+        try:
+            req = urllib.request.Request(f"{ENGINE_URL}/health", method='GET')
+            with urllib.request.urlopen(req, timeout=1) as resp:
+                if resp.status == 200:
+                    return # Server is ready!
+        except urllib.error.HTTPError as e:
+            if e.code == 503:
+                # 503 means model is still loading
+                time.sleep(1)
+                continue
+        except Exception:
+            # Not reachable yet, try starting it directly if init failed
+            subprocess.Popen(
+                ["su", "-c", "/data/adb/modules/native_ai_engine/system/bin/native_ai_engine"],
+                stdout=subprocess.DEVNULL, 
+                stderr=subprocess.DEVNULL
+            )
+            time.sleep(1)
 
 def sleep_daemon():
-    try:
-        # Graceful sleep payload
-        req = urllib.request.Request(
-            f"{ENGINE_URL}/shutdown",
-            data=b'SHUTDOWN_SOCKET',
-            method='POST'
-        )
-        urllib.request.urlopen(req, timeout=3)
-    except Exception:
-        pass
-    finally:
-        # Hard stop via init
-        subprocess.run(DAEMON_STOP_CMD, capture_output=True)
+    # llama-server doesn't have a shutdown endpoint, just stop the service
+    subprocess.run(DAEMON_STOP_CMD, capture_output=True)
 
 def execute_query(prompt, context=""):
-    payload = json.dumps({"prompt": prompt, "context": context}).encode('utf-8')
+    system_prompt = (
+        "You are a deeply reasoning AI. Always analyze the user's request step-by-step "
+        "and wrap your inner monologue inside <thought>...</thought> tags before generating the final answer."
+    )
+    full_prompt = f"<|system|>\n{system_prompt}<|end|>\n{context}<|user|>\n{prompt}<|end|>\n<|assistant|>\n"
+    payload = json.dumps({"prompt": full_prompt, "n_predict": 1024, "temperature": 0.6}).encode('utf-8')
     req = urllib.request.Request(
-        f"{ENGINE_URL}/llama_gatekeeper",
+        f"{ENGINE_URL}/completion",
         data=payload,
         headers={'Content-Type': 'application/json'},
         method='POST'
@@ -63,8 +77,8 @@ def execute_query(prompt, context=""):
     try:
         with urllib.request.urlopen(req, timeout=300) as resp:
             data = json.loads(resp.read().decode('utf-8'))
-            if "response" in data:
-                return data["response"]
+            if "content" in data:
+                return data["content"].strip()
             elif "error" in data:
                 return f"[Gatekeeper Backend Error] {data['error']}"
     except urllib.error.URLError as e:
