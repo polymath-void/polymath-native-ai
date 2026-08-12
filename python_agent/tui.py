@@ -9,6 +9,10 @@ from typing import List, Dict
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.styles import Style
+
+# Ensure the saved_chats directory exists so we can save memories
+import os
+os.makedirs("/data/data/com.termux/files/home/Projects/polymath-native-ai/saved_chats", exist_ok=True)
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
@@ -257,6 +261,35 @@ class AgentTUI:
             except Exception as e:
                 self.console.print(f"[red]Git command failed: {e}[/red]")
         
+        elif command == "/save":
+            filename = args.strip()
+            if not filename:
+                self.console.print("[yellow]Usage: /save <filename> (e.g., /save my_project_chat)[/yellow]")
+                return
+            
+            # Fetch the current conversation memory
+            history = self.memory.get_history(limit=500)
+            if not history:
+                self.console.print("[yellow]Memory is empty, nothing to save.[/yellow]")
+                return
+                
+            save_dir = "/data/data/com.termux/files/home/Projects/polymath-native-ai/saved_chats"
+            os.makedirs(save_dir, exist_ok=True)
+            
+            # Ensure it ends with .md
+            if not filename.endswith(".md"):
+                filename += ".md"
+            filepath = os.path.join(save_dir, filename)
+            
+            try:
+                with open(filepath, "w") as f:
+                    f.write(f"# Saved Memory Log: {filename}\n\n")
+                    for msg in history:
+                        f.write(f"**{msg['role'].upper()}**: {msg['content']}\n\n")
+                self.console.print(f"[green]Memory successfully backed up to saved_chats/{filename}[/green]")
+            except Exception as e:
+                self.console.print(f"[red]Failed to save memory:[/red] {e}")
+
         elif command == "/config":
             self.console.print(f"[cyan]Current Config:[/cyan]\n{json.dumps(self.config, indent=2)}")
         else:
