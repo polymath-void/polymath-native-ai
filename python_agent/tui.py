@@ -4,6 +4,7 @@ import json
 import sqlite3
 import time
 import getpass
+import re
 from typing import List, Dict
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -156,20 +157,35 @@ class AgentTUI:
                 context = self.memory.get_history(limit=50)
                 
                 # Show spinner while thinking
+                start_time = time.time()
                 with self.console.status("[bold cyan]Agent is thinking...", spinner="dots"):
                     response = self._query_llama_gatekeeper(user_input, context)
+                total_time = time.time() - start_time
+                
+                # Add total time to the footer if the gatekeeper returned metrics
+                if "*⚡ Tokens:" in response:
+                    response = response.replace("*⚡", f"*⏱️ {total_time:.1f}s | ⚡")
                 
                 # Store response
                 self.memory.add_message("assistant", response)
                 
                 # Print response nicely formatted
                 self.console.print()
-                self.console.print(Panel(
-                    Markdown(response),
-                    title="[bold magenta]Agent[/bold magenta]",
-                    border_style="magenta",
-                    expand=False
-                ))
+                self.console.rule("[bold magenta]Agent[/bold magenta]")
+                
+                # Split and format <thought> tags with ASCII colors
+                parts = re.split(r'(<thought>.*?</thought>)', response, flags=re.DOTALL)
+                for part in parts:
+                    if not part.strip():
+                        continue
+                    if part.startswith("<thought>"):
+                        thought_text = part.replace("<thought>", "").replace("</thought>", "").strip()
+                        self.console.print(f"[dim cyan]💭 {thought_text}[/dim cyan]\n")
+                    else:
+                        self.console.print(Markdown(part.strip()))
+                        self.console.print()
+                        
+                self.console.rule(style="magenta")
                 self.console.print()
 
             except KeyboardInterrupt:

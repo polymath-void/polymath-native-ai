@@ -115,8 +115,7 @@ def main():
     try:
         # 2. Execute routing natively
         response = execute_query(prompt, context)
-        total_time = time.time() - start_time
-        print(f"{response} | Total Time: {total_time:.1f}s*")
+        print(response)
     finally:
         # 3. Enforce strict Sleep lifecycle
         sleep_daemon()
