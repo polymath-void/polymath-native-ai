@@ -81,7 +81,16 @@ def execute_query(prompt, context=""):
         with urllib.request.urlopen(req, timeout=300) as resp:
             data = json.loads(resp.read().decode('utf-8'))
             if "choices" in data and len(data["choices"]) > 0:
-                return data["choices"][0]["text"].strip()
+                text = data["choices"][0]["text"].strip()
+                
+                # Extract metrics
+                usage = data.get("usage", {})
+                timings = data.get("timings", {})
+                total_tokens = usage.get("total_tokens", 0)
+                tps = timings.get("predicted_per_second", 0.0)
+                
+                metrics = f"\n\n--- \n*⚡ Tokens: {total_tokens} | Speed: {tps:.2f} t/s*"
+                return text + metrics
             elif "error" in data:
                 return f"[Gatekeeper Backend Error] {data['error']}"
     except urllib.error.URLError as e:
@@ -98,13 +107,16 @@ def main():
     prompt = sys.argv[1]
     context = sys.argv[2] if len(sys.argv) > 2 else ""
     
+    start_time = time.time()
+    
     # 1. Enforce strict Wake lifecycle
     wake_daemon()
     
     try:
         # 2. Execute routing natively
         response = execute_query(prompt, context)
-        print(response)
+        total_time = time.time() - start_time
+        print(f"{response} | Total Time: {total_time:.1f}s*")
     finally:
         # 3. Enforce strict Sleep lifecycle
         sleep_daemon()
