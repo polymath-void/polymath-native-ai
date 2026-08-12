@@ -23,6 +23,7 @@ build_binary.sh
 *.sqlite
 *.db
 memory.db
+.agent_history
 active_chats.md
 
 # OS generated files
