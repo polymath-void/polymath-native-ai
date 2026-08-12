@@ -15,7 +15,7 @@ DAEMON_START_CMD = ["su", "-c", "start native_ai_engine"]
 DAEMON_STOP_CMD = ["su", "-c", "stop native_ai_engine"]
 
 def load_config():
-    config_path = "/data/data/com.termux/files/home/Projects/native-ai/config.env"
+    config_path = "/data/data/com.termux/files/home/Projects/polymath-native-ai/config.env"
     port = "57160"
     temperature = 0.6
     try:

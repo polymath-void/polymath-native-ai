@@ -74,7 +74,7 @@ class AgentTUI:
     def _load_config(self):
         self.config = {}
         try:
-            with open("/data/data/com.termux/files/home/Projects/native-ai/config.env", "r") as f:
+            with open("/data/data/com.termux/files/home/Projects/polymath-native-ai/config.env", "r") as f:
                 for line in f:
                     if "=" in line:
                         k, v = line.strip().split("=", 1)
@@ -188,7 +188,7 @@ class AgentTUI:
             if not skill_name:
                 self.console.print("[yellow]Usage: /skill <name> (e.g., SYSTEM_PROMPT)[/yellow]")
                 return
-            path = f"/data/data/com.termux/files/home/Projects/native-ai/docs/{skill_name}.md"
+            path = f"/data/data/com.termux/files/home/Projects/polymath-native-ai/docs/{skill_name}.md"
             if not os.path.exists(path):
                 self.console.print(f"[red]Skill file {skill_name}.md not found in docs/.[/red]")
                 return
@@ -204,7 +204,7 @@ class AgentTUI:
                 return
             import subprocess
             try:
-                result = subprocess.run(f"git -C /data/data/com.termux/files/home/Projects/native-ai {args}", shell=True, capture_output=True, text=True)
+                result = subprocess.run(f"git -C /data/data/com.termux/files/home/Projects/polymath-native-ai {args}", shell=True, capture_output=True, text=True)
                 output = f"Git Output:\n{result.stdout}\n{result.stderr}".strip()
                 self.console.print(f"[cyan]{output}[/cyan]")
                 self.memory.add_message("user", f"[SYSTEM: GIT COMMAND RAN: git {args}]\n{output}")

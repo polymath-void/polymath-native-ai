@@ -4,7 +4,7 @@ export LD_LIBRARY_PATH=$PREFIX/lib
 export PATH=$PREFIX/bin:$PATH
 export TMPDIR=/data/local/tmp
 
-CONFIG_FILE="/data/data/com.termux/files/home/Projects/native-ai/config.env"
+CONFIG_FILE="/data/data/com.termux/files/home/Projects/polymath-native-ai/config.env"
 if [ -f "$CONFIG_FILE" ]; then
     . "$CONFIG_FILE"
 else

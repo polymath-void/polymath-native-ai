@@ -23,12 +23,12 @@ echo "[*] Installing Python dependencies (prompt_toolkit, rich)..."
 pip install prompt_toolkit rich
 
 # 4. Clone Repository
-REPO_DIR="$HOME/Projects/native-ai"
+REPO_DIR="$HOME/Projects/polymath-native-ai"
 if [ ! -d "$REPO_DIR" ]; then
     echo "[*] Cloning Native AI repository..."
     mkdir -p "$HOME/Projects"
     # Replace URL with actual GitHub repository when published
-    git clone https://github.com/username/native-ai.git "$REPO_DIR"
+    git clone https://github.com/polymath-void/polymath-native-ai.git "$REPO_DIR"
 else
     echo "[*] Repository already exists at $REPO_DIR. Pulling latest..."
     cd "$REPO_DIR" && git pull
@@ -84,7 +84,7 @@ echo "The Magisk daemon script has been deployed."
 echo "If this is your first time installing, you MUST reboot your device so Android init can register the service."
 echo ""
 echo "After reboot, start the agent by running:"
-echo "  cd ~/Projects/native-ai"
+echo "  cd ~/Projects/polymath-native-ai"
 echo "  python3 python_agent/tui.py"
 echo ""
 echo "Default Auth Token: admin123"
