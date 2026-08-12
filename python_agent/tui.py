@@ -203,9 +203,37 @@ class AgentTUI:
 
         if command == "/skill":
             skill_name = args.strip()
-            if not skill_name:
-                self.console.print("[yellow]Usage: /skill <name> (e.g., SYSTEM_PROMPT)[/yellow]")
-                return
+            if not skill_name or skill_name.lower() == "list":
+                docs_dir = "/data/data/com.termux/files/home/Projects/polymath-native-ai/docs"
+                try:
+                    skills = [f[:-3] for f in os.listdir(docs_dir) if f.endswith(".md")]
+                except Exception:
+                    skills = []
+                
+                if not skills:
+                    self.console.print("[red]No skills found in docs/ directory.[/red]")
+                    return
+                
+                self.console.print("[cyan]Available Skills:[/cyan]")
+                for i, s in enumerate(skills):
+                    self.console.print(f"  [bold yellow]{i+1}[/bold yellow]: {s}")
+                
+                try:
+                    choice = self.session.prompt("Select a skill number (or press enter to cancel): ")
+                    if not choice.strip():
+                        return
+                    choice_idx = int(choice.strip()) - 1
+                    if 0 <= choice_idx < len(skills):
+                        skill_name = skills[choice_idx]
+                    else:
+                        self.console.print("[red]Invalid selection.[/red]")
+                        return
+                except ValueError:
+                    self.console.print("[red]Invalid input. Please enter a number.[/red]")
+                    return
+                except KeyboardInterrupt:
+                    return
+
             path = f"/data/data/com.termux/files/home/Projects/polymath-native-ai/docs/{skill_name}.md"
             if not os.path.exists(path):
                 self.console.print(f"[red]Skill file {skill_name}.md not found in docs/.[/red]")
