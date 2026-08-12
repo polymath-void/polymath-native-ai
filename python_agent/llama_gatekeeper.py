@@ -17,16 +17,19 @@ DAEMON_STOP_CMD = ["su", "-c", "stop native_ai_engine"]
 def load_config():
     config_path = "/data/data/com.termux/files/home/Projects/native-ai/config.env"
     port = "57160"
+    temperature = 0.6
     try:
         with open(config_path, "r") as f:
             for line in f:
                 if line.startswith("PORT="):
                     port = line.strip().split("=")[1]
+                elif line.startswith("TEMPERATURE="):
+                    temperature = float(line.strip().split("=")[1])
     except Exception:
         pass
-    return f"http://127.0.0.1:{port}"
+    return f"http://127.0.0.1:{port}", temperature
 
-ENGINE_URL = load_config()
+ENGINE_URL, ENGINE_TEMP = load_config()
 
 def wake_daemon():
     try:
@@ -66,7 +69,7 @@ def execute_query(prompt, context=""):
         "and wrap your inner monologue inside <thought>...</thought> tags before generating the final answer."
     )
     full_prompt = f"<|system|>\n{system_prompt}<|end|>\n{context}<|user|>\n{prompt}<|end|>\n<|assistant|>\n"
-    payload = json.dumps({"prompt": full_prompt, "n_predict": 1024, "temperature": 0.6}).encode('utf-8')
+    payload = json.dumps({"prompt": full_prompt, "n_predict": 1024, "temperature": ENGINE_TEMP}).encode('utf-8')
     req = urllib.request.Request(
         f"{ENGINE_URL}/completion",
         data=payload,
