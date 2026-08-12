@@ -1,0 +1,6 @@
+id=native_ai_engine
+name=Native AI Engine
+version=v1.0
+versionCode=1
+author=Agent Swarm
+description=High-performance C++/Rust native AI model engine running via WASM communicator bridge.

@@ -1,0 +1,19 @@
+# Android init.rc service specification for native_ai_engine
+# Installed path: /system/bin/native_ai_engine
+# Service config: /system/etc/init/native_ai_engine.rc
+
+service native_ai_engine /system/bin/native_ai_engine --daemon --verbose
+    class main
+    user root
+    group root system readproc
+    seclabel u:r:su:s0
+    disabled
+    oneshot
+
+# native_ai_engine is NOT auto-started to preserve battery/thermal limits (started on-demand by python orchestrator)
+
+on property:persist.vendor.ai_engine.enable=1
+    start native_ai_engine
+
+on property:persist.vendor.ai_engine.enable=0
+    stop native_ai_engine

@@ -1,0 +1,5 @@
+[build]
+rustflags = ["-C", "link-arg=-L/data/data/com.termux/files/usr/lib", "-C", "link-arg=-lunwind"]
+
+[target.aarch64-linux-android]
+linker = "clang"

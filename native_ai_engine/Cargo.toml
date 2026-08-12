@@ -1,0 +1,34 @@
+[package]
+name = "native_ai_engine"
+version = "1.0.0"
+edition = "2021"
+authors = ["Polymath AGY Native Core <agent@polymath>"]
+description = "High-performance raw AI model execution engine binary targeting Android /system/bin"
+
+[dependencies]
+memmap2 = "0.9"
+libc = "0.2"
+log = "0.4"
+env_logger = "0.10"
+ctrlc = "3.4"
+wasmi = "0.40"
+wat = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tiny_http = "0.12"
+anyhow = "1.0"
+llama_cpp = "0.3.2"
+
+[[bin]]
+name = "native_ai_engine"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = false
+codegen-units = 16
+panic = "abort"
+strip = true
+
+[profile.release.build-override]
+opt-level = 0

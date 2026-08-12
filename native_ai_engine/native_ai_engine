@@ -1,0 +1,7 @@
+#!/system/bin/sh
+# Dummy Daemon Executable
+echo "[dummy_daemon] Daemon started at $(date)"
+while true; do
+    echo "[dummy_daemon] Running state ok..."
+    sleep 30
+done
